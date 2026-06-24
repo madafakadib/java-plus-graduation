@@ -1,0 +1,22 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+
+    routes:
+      - id: main-service-route
+        uri: lb://MAIN-SERVER
+        predicates:
+          - Path=/admin/**, /users/**, /events/**, /categories/**, /compilations/**
+
+      - id: ewm-stats-route
+        uri: lb://EWM-STATS-SERVER
+        predicates:
+          - Path=/stats/**, /hit
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
