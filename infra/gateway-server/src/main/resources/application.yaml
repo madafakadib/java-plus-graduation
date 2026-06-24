@@ -4,7 +4,7 @@ spring:
   cloud:
     config:
       discovery:
-        enabled: true           # 1. Говорим: "Ищи через Discovery"
-        service-id: config-server # 2. Имя, под которым Config Server зарегистрирован в Eureka
+        enabled: true
+        service-id: config-server
   config:
-    import: "optional:configserver:" # 3. СТРОГО ТАК. Никаких "http://" здесь быть не должно!
+    import: "optional:configserver:"

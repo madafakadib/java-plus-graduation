@@ -11,7 +11,7 @@ spring:
         - id: main-service-route
           uri: lb://MAIN-SERVICE
           predicates:
-            - Path=/admin/**, /users/**, /categories/**, /events/**, /compilations/** # Все эндпоинты диплома EWM
+            - Path=/admin/**, /users/**, /categories/**, /events/**, /compilations/**
 
         - id: stats-service-route
           uri: lb://STATS-SERVER
