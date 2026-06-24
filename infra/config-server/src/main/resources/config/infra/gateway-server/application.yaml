@@ -7,12 +7,12 @@ spring:
 
     routes:
       - id: main-service-route
-        uri: lb://MAIN-SERVICE
+        uri: lb://MAIN-SERVER
         predicates:
           - Path=/admin/**, /users/**, /events/**, /categories/**, /compilations/**
 
       - id: ewm-stats-route
-        uri: lb://STATS-SERVER
+        uri: lb://EWM-STATS-SERVER
         predicates:
           - Path=/stats/**, /hit
 
