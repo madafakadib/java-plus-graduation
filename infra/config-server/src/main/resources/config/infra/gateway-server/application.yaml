@@ -3,18 +3,22 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
+        routes:
+          - id: main-service-route
+            uri: lb://MAIN-SERVER
+            predicates:
+              - Path=/admin/**
+              - Path=/users/**
+              - Path=/events/**
+              - Path=/categories/**
+              - Path=/compilations/**
 
-    routes:
-      - id: main-service-route
-        uri: lb://MAIN-SERVER
-        predicates:
-          - Path=/admin/**, /users/**, /events/**, /categories/**, /compilations/**
-
-      - id: ewm-stats-route
-        uri: lb://EWM-STATS-SERVER
-        predicates:
-          - Path=/stats/**, /hit
+          - id: ewm-stats-route
+            uri: lb://EWM-STATS-SERVER
+            predicates:
+              - Path=/stats/**
+              - Path=/hit/**
 
 eureka:
   client:
