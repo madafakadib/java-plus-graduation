@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="EWM+Stats - dev" type="CompoundRunConfigurationType">
+    <toRun name="Ewm-dev" type="Application" />
+    <toRun name="Stats-dev" type="Application" />
+    <toRun name="DiscoveryServer" type="AmplicodeSpringBootApplication" />
+    <toRun name="Gateway" type="AmplicodeSpringBootApplication" />
+    <toRun name="ru.yandex.practicum.ConfigServer" type="AmplicodeSpringBootApplication" />
+    <method v="2" />
+  </configuration>
+</component>
