@@ -31,6 +31,7 @@
 	</properties>
 
 	<dependencyManagement>
+
 		<dependencies>
 			<!-- H2 Database - версия для всех модулей -->
 			<dependency>
