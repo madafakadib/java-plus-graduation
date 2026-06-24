@@ -4,15 +4,22 @@ server:
 spring:
   application:
     name: ewm-stats-server
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fast: true
+      retry:
+        max-interval: 6000
 
   config:
-    import: optional:configserver:http://config-server
-    fail-fast: true
-    retry:
-      useRandomPolicy: true
-      max-interval: 6000
+    import: "optional:configserver:"
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${random.value}
+    non-secure-port: ${server.port}

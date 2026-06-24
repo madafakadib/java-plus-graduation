@@ -1,26 +1,19 @@
+server:
+  port: 8080
+
 spring:
   cloud:
     gateway:
       discovery:
         locator:
-          enabled: false
-        routes:
-          - id: main-service-route
-            uri: lb://MAIN-SERVER
-            predicates:
-              - Path=/admin/**
-              - Path=/users/**
-              - Path=/events/**
-              - Path=/categories/**
-              - Path=/compilations/**
+          enabled: true
+      routes:
+        - id: main-service-route
+          uri: lb://MAIN-SERVICE
+          predicates:
+            - Path=/admin/**, /users/**, /categories/**, /events/**, /compilations/** # Все эндпоинты диплома EWM
 
-          - id: ewm-stats-route
-            uri: lb://EWM-STATS-SERVER
-            predicates:
-              - Path=/stats/**
-              - Path=/hit/**
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+        - id: stats-service-route
+          uri: lb://STATS-SERVER
+          predicates:
+            - Path=/hit, /stats

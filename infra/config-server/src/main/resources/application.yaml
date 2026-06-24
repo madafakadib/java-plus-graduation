@@ -1,20 +1,22 @@
 server:
-  port: 0
+  port: 0 # Включаем динамический порт
 
 spring:
   application:
     name: config-server
   profiles:
-    active: native
+    active: native # Включаем чтение конфигураций из локальной файловой системы (не из Git)
   cloud:
     config:
       server:
         native:
-          searchLocations:
-            - classpath:config/stats/{application}
-            - classpath:config/core/{application}
+          # Указываем путь к папкам конфигураций внутри ресурсов Config Server
+          search-locations: classpath:/config/core, classpath:/config/infra, classpath:/config/stats
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    # Важно: передаем Eureka случайный ID, чтобы при перезапусках порты не конфликтовали в реестре
+    instance-id: ${spring.application.name}:${random.value}
