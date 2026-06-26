@@ -1,19 +1,26 @@
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    gateway:
+      enabled: true
+
 spring:
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
+      discovery.locator.enabled: true
       routes:
-        - id: main-service-route
-          uri: lb://MAIN-SERVICE
+        - id: main_service_route
+          uri: lb://main-service
           predicates:
-            - Path=/admin/**, /users/**, /categories/**, /events/**, /compilations/**
+            - Path=/**
 
-        - id: stats-service-route
-          uri: lb://STATS-SERVER
+        - id: ewm-stats-server
+          uri: lb://ewm-stats-server
           predicates:
-            - Path=/hit, /stats
+            - Path=/**
