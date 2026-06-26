@@ -15,12 +15,62 @@ spring:
     gateway:
       discovery.locator.enabled: true
       routes:
-        - id: main_service_route
+        # ===================================================================
+        # Routes for Categories
+        # ===================================================================
+        - id: categories
           uri: lb://main-service
           predicates:
-            - Path=/**
+            - Path=/categories/**
 
-        - id: ewm-stats-server
-          uri: lb://ewm-stats-server
+        - id: categories-admin
+          uri: lb://main-service
           predicates:
-            - Path=/**
+            - Path=/admin/categories/**
+
+        # ===================================================================
+        # Routes for Compilations
+        # ===================================================================
+        - id: compilations
+          uri: lb://main-service
+          predicates:
+            - Path=/compilations/**
+
+        - id: compilations-admin
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/compilations/**
+
+        # ===================================================================
+        # Routes for Event
+        # ===================================================================
+        - id: event
+          uri: lb://main-service
+          predicates:
+            - Path=/events/**
+
+        - id: event-admin
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/events/**
+
+        - id: event-private
+          uri: lb://main-service
+          predicates:
+            - Path=/users/{userId}/events/**
+
+        # ===================================================================
+        # Routes for Request
+        # ===================================================================
+        - id: request
+          uri: lb://main-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+
+        # ===================================================================
+        # Routes for User Service
+        # ===================================================================
+        - id: user
+          uri: lb://main-service
+          predicates:
+            - Path=/admin/users/**
