@@ -1,76 +1,34 @@
 server:
   port: 8080
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    gateway:
-      enabled: true
-
 spring:
+  output:
+    ansi:
+      enabled: always
   cloud:
     gateway:
       discovery.locator.enabled: true
       routes:
-        # ===================================================================
-        # Routes for Categories
-        # ===================================================================
-        - id: categories
+        - id: main-service
           uri: lb://main-service
           predicates:
-            - Path=/categories/**
+            - Path=/categories/**, /admin/**, /users/**, /events/**, /compilations/**
+        - id: stats-server
+          uri: lb://stats-server
+          predicates:
+            - Path=/hit/**, /stats/**
 
-        - id: categories-admin
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/categories/**
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: gateway
 
-        # ===================================================================
-        # Routes for Compilations
-        # ===================================================================
-        - id: compilations
-          uri: lb://main-service
-          predicates:
-            - Path=/compilations/**
-
-        - id: compilations-admin
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/compilations/**
-
-        # ===================================================================
-        # Routes for Event
-        # ===================================================================
-        - id: event
-          uri: lb://main-service
-          predicates:
-            - Path=/events/**
-
-        - id: event-admin
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/events/**
-
-        - id: event-private
-          uri: lb://main-service
-          predicates:
-            - Path=/users/{userId}/events/**
-
-        # ===================================================================
-        # Routes for Request
-        # ===================================================================
-        - id: request
-          uri: lb://main-service
-          predicates:
-            - Path=/users/{userId}/requests/**
-
-        # ===================================================================
-        # Routes for User Service
-        # ===================================================================
-        - id: user
-          uri: lb://main-service
-          predicates:
-            - Path=/admin/users/**
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    reactor.netty: DEBUG
