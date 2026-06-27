@@ -13,9 +13,7 @@ import ru.practicum.ewm.event.dto.paramDto.PublicUserEventParam;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventSort;
 import ru.practicum.ewm.event.model.EventState;
-import ru.practicum.ewm.event.model.EventView;
 import ru.practicum.ewm.event.repository.EventRepository;
-import ru.practicum.ewm.event.repository.EventViewRepository;
 import ru.practicum.ewm.exceptions.exceptions.ConditionsNotMetException;
 import ru.practicum.ewm.exceptions.exceptions.NotFoundException;
 import ru.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
@@ -48,7 +46,6 @@ public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
     private final EventMapper eventMapper;
     private final ParticipationRequestMapper requestMapper;
-    private final EventViewRepository eventViewRepository;
 
 
     @Transactional
@@ -261,31 +258,17 @@ public class EventServiceImpl implements EventService {
 
     public EventFullDto findEventById(String uri, String ip, Long id) {
 
-        Event event = eventRepository.findById(id)
+        EventFullDto event = eventRepository.findEventByIdFullDto(id)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotFoundException("Published Event with id=" + id + " was not found");
         }
 
-        if (!eventViewRepository.existsByEventIdAndIp(id, ip)) {
-            // Сохраняем просмотр
-            EventView view = new EventView();
-            view.setEventId(id);
-            view.setIp(ip);
-            view.setViewedAt(LocalDateTime.now());
-            eventViewRepository.save(view);
-
-            // Увеличиваем счётчик в БД
-            event.setViews(event.getViews() + 1);
-            eventRepository.save(event);
-        }
-
         sendHit(uri, ip, LocalDateTime.now());
-        long confirmedRequests = requestRepository.countByEventIdAndStatus(id, RequestStatus.CONFIRMED);
+        enrichEventWithViews(event);
 
-        // Возвращаем актуальное значение views из БД
-        return eventMapper.toEventFullDto(event, confirmedRequests, event.getViews());
+        return event;
     }
 
     @Override
