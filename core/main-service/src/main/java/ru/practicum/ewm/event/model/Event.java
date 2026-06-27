@@ -51,6 +51,9 @@ public class Event {
     @Column(nullable = false)
     private EventState state;
 
+    @Column(name = "views", nullable = false)
+    private Long views = 0L;
+
     // Связи
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id", nullable = false)
