@@ -266,15 +266,6 @@ public class EventServiceImpl implements EventService {
         }
 
         sendHit(uri, ip, LocalDateTime.now());
-
-        // Небольшая задержка для обработки хита сервисом статистики
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        // Получаем обновленную статистику
         enrichEventWithViews(event);
 
         return event;

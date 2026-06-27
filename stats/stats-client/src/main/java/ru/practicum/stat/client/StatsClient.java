@@ -98,7 +98,7 @@ public class StatsClient {
                 .fromUri(baseUri)
                 .queryParam("start", paramDto.getStart().format(FORMATTER))
                 .queryParam("end", paramDto.getEnd().format(FORMATTER))
-                .queryParam("uris", paramDto.getUris())
+                .queryParam("uris", (Object[]) paramDto.getUris())
                 .queryParam("unique", paramDto.getUnique())
                 .build()
                 .encode()
