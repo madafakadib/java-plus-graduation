@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
@@ -23,11 +23,6 @@ spring:
   sql:
     init:
       mode: never
-
-#logging:
-#  level:
-#    ru.practicum.ewm: DEBUG
-#    org.hibernate.SQL: DEBUG
 
 eureka:
   instance:
