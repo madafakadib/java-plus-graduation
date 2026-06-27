@@ -431,11 +431,9 @@ public class EventServiceImpl implements EventService {
     }
 
     private void enrichEventWithViews(EventFullDto event) {
-        LocalDateTime startDate = event.getPublishedOn() != null ? event.getPublishedOn() : event.getCreatedOn();
         String[] uris = {"/events/" + event.getId()};
-        Map<Long, Long> hits = fetchViews(uris, startDate);
-        long dbViews = hits.getOrDefault(event.getId(), 0L);
-        event.setViews(dbViews + 1);
+        Map<Long, Long> hits = fetchViews(uris, event.getPublishedOn());
+        event.setViews(hits.getOrDefault(event.getId(), 0L));
     }
 
     private Long extractEventIdFromUri(ViewStatsDto stat) {
@@ -445,6 +443,7 @@ public class EventServiceImpl implements EventService {
 
     private void sendHit(String uri, String ip, LocalDateTime time) {
         EndpointHitDto hitDto = EndpointHitDto.builder()
+                .app("main-service")
                 .uri(uri)
                 .ip(ip)
                 .timestamp(time)
