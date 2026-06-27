@@ -266,7 +266,6 @@ public class EventServiceImpl implements EventService {
         }
 
         sendHit(uri, ip, LocalDateTime.now());
-        event.setViews(1L);
         enrichEventWithViews(event);
 
         return event;
@@ -432,9 +431,11 @@ public class EventServiceImpl implements EventService {
     }
 
     private void enrichEventWithViews(EventFullDto event) {
+        LocalDateTime startDate = event.getPublishedOn() != null ? event.getPublishedOn() : event.getCreatedOn();
         String[] uris = {"/events/" + event.getId()};
-        Map<Long, Long> hits = fetchViews(uris, event.getPublishedOn());
-        event.setViews(hits.getOrDefault(event.getId(), 0L));
+        Map<Long, Long> hits = fetchViews(uris, startDate);
+        long dbViews = hits.getOrDefault(event.getId(), 0L);
+        event.setViews(dbViews + 1);
     }
 
     private Long extractEventIdFromUri(ViewStatsDto stat) {
