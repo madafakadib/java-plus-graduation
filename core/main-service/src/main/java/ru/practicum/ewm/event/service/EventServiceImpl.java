@@ -266,6 +266,7 @@ public class EventServiceImpl implements EventService {
         }
 
         sendHit(uri, ip, LocalDateTime.now());
+        event.setViews(1L);
         enrichEventWithViews(event);
 
         return event;
