@@ -18,7 +18,7 @@ public class ParticipationRequestMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public ParticipationRequest toParticipationRequest(Event event, User requester) {
+    public static ParticipationRequest toParticipationRequest(Event event, User requester) {
         return ParticipationRequest.builder()
                 .event(event)
                 .requester(requester)
@@ -27,7 +27,7 @@ public class ParticipationRequestMapper {
                 .build();
     }
 
-    public ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {
+    public static ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {
         return ParticipationRequestDto.builder()
                 .id(request.getId())
                 .created(request.getCreated().format(FORMATTER))
@@ -37,13 +37,13 @@ public class ParticipationRequestMapper {
                 .build();
     }
 
-    public List<ParticipationRequestDto> toParticipationRequestDto(List<ParticipationRequest> requests) {
+    public static List<ParticipationRequestDto> toParticipationRequestDto(List<ParticipationRequest> requests) {
         return requests.stream()
-                .map(this::toParticipationRequestDto)
+                .map(ParticipationRequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
-    public EventRequestStatusUpdateResult toEventRequestStatusUpdateResult(
+    public static EventRequestStatusUpdateResult toEventRequestStatusUpdateResult(
             List<ParticipationRequest> confirmedRequests,
             List<ParticipationRequest> rejectedRequests) {
         return EventRequestStatusUpdateResult.builder()

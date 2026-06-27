@@ -18,16 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
     @Transactional
     @Override
     public UserDto createUser(NewUserRequest newUserRequest) {
         // Email не проверяется на уникальность, т.к. отлавливается DataIntegrityViolationException при нарушении UNIQUE в БД
-        User user = userRepository.save(userMapper.toUser(newUserRequest));
+        User user = userRepository.save(UserMapper.toUser(newUserRequest));
         log.info("Created user with id: {}", user.getId());
 
-        return userMapper.toUserDto(user);
+        return UserMapper.toUserDto(user);
     }
 
     @Override

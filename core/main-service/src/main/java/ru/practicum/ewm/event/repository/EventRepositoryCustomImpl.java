@@ -45,7 +45,9 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                         event.paid,
                         event.publishedOn,
                         event.title,
-                        Expressions.asNumber(0L).as("views")))
+                        Expressions.asNumber(0L).as("views"),
+                        Expressions.asNumber(0L).as("commentsCount")
+                ))
                 .from(event)
                 .leftJoin(request).on(
                         request.event.eq(event)
@@ -104,7 +106,8 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                                 event.requestModeration,
                                 event.state,
                                 event.title,
-                                Expressions.asNumber(0L).as("views") // пока 0, потом подгружаем в сервисе
+                                Expressions.asNumber(0L).as("views"), // пока 0, потом подгружаем в сервисе
+                                Expressions.asNumber(0L).as("commentsCount")
                         ))
                         .from(event)
                         .leftJoin(request).on(request.event.eq(event).and(request.status.eq(RequestStatus.CONFIRMED)))
@@ -155,7 +158,9 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                         event.requestModeration,
                         event.state,
                         event.title,
-                        Expressions.asNumber(0L).as("views")))
+                        Expressions.asNumber(0L).as("views"),
+                        Expressions.asNumber(0L).as("commentsCount")
+                ))
                 .from(event)
                 .leftJoin(request).on(
                         request.event.eq(event)

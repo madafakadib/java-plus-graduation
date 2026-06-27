@@ -2,7 +2,6 @@ package ru.practicum.ewm;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,13 +12,11 @@ import java.time.Duration;
 @Configuration
 public class AppConfig {
 
-    @PersistenceContext
     private final EntityManager entityManager;
 
     public AppConfig(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
-
 
     // бин JPAQueryFactory для QueryDSL
     @Bean

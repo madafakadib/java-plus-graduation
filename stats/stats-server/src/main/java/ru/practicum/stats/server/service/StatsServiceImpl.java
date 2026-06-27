@@ -26,7 +26,7 @@ public class StatsServiceImpl implements StatsService {
     @Transactional
     public void saveHit(EndpointHitDto hitDto) {
         EndpointHit hit = StatsMapper.toEntity(hitDto);
-        repository.saveAndFlush(hit);
+        repository.save(hit);
         log.debug("Saved hit: {} {} from {}", hit.getApp(), hit.getUri(), hit.getIp());
     }
 

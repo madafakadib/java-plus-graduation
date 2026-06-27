@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventShortDto implements Viewable {
+public class EventShortDto implements Viewable, Commentable {
     private Long id;
 
     private String annotation;
@@ -38,5 +38,7 @@ public class EventShortDto implements Viewable {
     private String title;
 
     private Long views;  // подгружаем отдельно из сервиса статистики
+
+    private Long commentsCount;
 
 }

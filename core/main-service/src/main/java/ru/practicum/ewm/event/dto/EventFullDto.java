@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventFullDto implements Viewable {
+public class EventFullDto implements Viewable, Commentable {
     private Long id;
 
     @NotBlank
@@ -59,4 +59,7 @@ public class EventFullDto implements Viewable {
     private String title;
 
     private Long views;  // из сервиса статистики
+
+    private Long commentsCount;
+
 }

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.categories.model.Category;
 import ru.practicum.ewm.categories.repository.CategoryRepository;
+import ru.practicum.ewm.comments.model.CommentStatus;
+import ru.practicum.ewm.comments.repository.CommentRepository;
 import ru.practicum.ewm.event.dto.*;
 import ru.practicum.ewm.event.dto.paramDto.AdminUserEventParam;
 import ru.practicum.ewm.event.dto.paramDto.EventRepositoryParam;
@@ -44,8 +46,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestRepository requestRepository;
     private final StatsClient statsClient;
-    private final EventMapper eventMapper;
-    private final ParticipationRequestMapper requestMapper;
+    private final CommentRepository commentRepository;
 
 
     @Transactional
@@ -63,11 +64,11 @@ public class EventServiceImpl implements EventService {
 
         Category cat = categoryRepository.getCategory(newEventDto.getCategory());
 
-        Event event = eventMapper.toEvent(newEventDto, cat, user);
+        Event event = EventMapper.toEvent(newEventDto, cat, user);
 
         event = eventRepository.save(event);
 
-        return eventMapper.toEventFullDto(event, 0L, 0L);
+        return EventMapper.toEventFullDto(event, 0L, 0L);
     }
 
     @Override
@@ -84,6 +85,7 @@ public class EventServiceImpl implements EventService {
         }
 
         enrichEventsWithViews(events);
+        enrichEventsListWithCommentsCount(events);
 
         return events;
     }
@@ -98,6 +100,7 @@ public class EventServiceImpl implements EventService {
         }
 
         enrichEventsWithViews(events);
+        enrichEventsListWithCommentsCount(events);
 
         if (param.getSortOrDefault() == EventSort.VIEWS) {  // из репозитория приходят уже отсортированными по дате
             events.sort(Comparator.comparing(EventShortDto::getViews).reversed());
@@ -118,6 +121,7 @@ public class EventServiceImpl implements EventService {
         }
 
         enrichEventsWithViews(events);
+        enrichEventsListWithCommentsCount(events);
 
         return events;
     }
@@ -133,6 +137,7 @@ public class EventServiceImpl implements EventService {
         }
 
         enrichEventWithViews(event);
+        enrichEventsListWithCommentsCount(List.of(event));
 
         return event;
     }
@@ -187,7 +192,7 @@ public class EventServiceImpl implements EventService {
         if (body.getCategory() != null) {
             cat = categoryRepository.getCategory(body.getCategory());
         }
-        eventMapper.updateEventFromUserRequest(body, event, cat);
+        EventMapper.updateEventFromUserRequest(body, event, cat);
 
         event = eventRepository.save(event);
 
@@ -197,7 +202,10 @@ public class EventServiceImpl implements EventService {
 
         long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
-        return eventMapper.toEventFullDto(event, confirmedRequests, views);
+        EventFullDto eventFullDto = EventMapper.toEventFullDto(event, confirmedRequests, views);
+        enrichEventsListWithCommentsCount(List.of(eventFullDto));
+
+        return eventFullDto;
     }
 
 
@@ -212,7 +220,7 @@ public class EventServiceImpl implements EventService {
             category = categoryRepository.getCategory(body.getCategory());
         }
 
-        eventMapper.updateEventFromAdminRequest(body, event, category);
+        EventMapper.updateEventFromAdminRequest(body, event, category);
 
         if (body.getStateAction() != null) {
             switch (body.getStateAction()) {
@@ -253,7 +261,10 @@ public class EventServiceImpl implements EventService {
 
         long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
-        return eventMapper.toEventFullDto(event, confirmedRequests, views);
+        EventFullDto eventFullDto = EventMapper.toEventFullDto(event, confirmedRequests, views);
+        enrichEventsListWithCommentsCount(List.of(eventFullDto));
+
+        return eventFullDto;
     }
 
     public EventFullDto findEventById(String uri, String ip, Long id) {
@@ -264,9 +275,10 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotFoundException("Published Event with id=" + id + " was not found");
         }
-        enrichEventWithViews(event);
 
         sendHit(uri, ip, LocalDateTime.now());
+        enrichEventWithViews(event);
+        enrichEventsListWithCommentsCount(List.of(event));
 
         return event;
     }
@@ -282,7 +294,7 @@ public class EventServiceImpl implements EventService {
 
         List<ParticipationRequest> requests = requestRepository.findByEventId(eventId);
 
-        return requestMapper.toParticipationRequestDto(requests);
+        return ParticipationRequestMapper.toParticipationRequestDto(requests);
 
     }
 
@@ -343,7 +355,7 @@ public class EventServiceImpl implements EventService {
             requestRepository.updateStatusByEventId(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
         }
 
-        return requestMapper.toEventRequestStatusUpdateResult(approved, rejected);
+        return ParticipationRequestMapper.toEventRequestStatusUpdateResult(approved, rejected);
     }
 
     @Override
@@ -355,10 +367,11 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAllByIdIn(eventId);
 
         List<EventShortDto> dtos = events.stream()
-                .map(event -> eventMapper.toEventShortDto(event, 0L, 0L))
+                .map(event -> EventMapper.toEventShortDto(event, 0L, 0L))
                 .collect(Collectors.toList());
 
         enrichEventsWithViews(dtos);
+        enrichEventsListWithCommentsCount(dtos);
 
         return dtos;
     }
@@ -443,12 +456,29 @@ public class EventServiceImpl implements EventService {
 
     private void sendHit(String uri, String ip, LocalDateTime time) {
         EndpointHitDto hitDto = EndpointHitDto.builder()
-                .app("main-service")
                 .uri(uri)
                 .ip(ip)
                 .timestamp(time)
                 .build();
 
         statsClient.hit(hitDto);
+    }
+
+    private <T extends Commentable> void enrichEventsListWithCommentsCount(List<T> eventDtos) {
+        if (eventDtos.isEmpty()) return;
+
+        List<Long> ids = eventDtos.stream()
+                .map(Commentable::getId)
+                .collect(Collectors.toList());
+
+        List<Object[]> counts = commentRepository.countByEventIdInAndStatus(ids, CommentStatus.APPROVED);
+        // просто переделываем список из массивов [id, count] в Map <id, count>
+        Map<Long, Long> countsMap = counts.stream()
+                .collect(Collectors.toMap(
+                        arr -> (Long) arr[0], // берем первую цифру из массива - это eventId
+                        arr -> (Long) arr[1]  // берем вторую цифру из массива - это count
+                ));
+
+        eventDtos.forEach(item -> item.setCommentsCount(countsMap.getOrDefault(item.getId(), 0L)));
     }
 }

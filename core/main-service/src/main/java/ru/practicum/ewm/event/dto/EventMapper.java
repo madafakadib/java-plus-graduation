@@ -1,7 +1,6 @@
 package ru.practicum.ewm.event.dto;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import ru.practicum.ewm.categories.dto.CategoryMapper;
 import ru.practicum.ewm.categories.model.Category;
 import ru.practicum.ewm.event.model.Event;
@@ -11,14 +10,10 @@ import ru.practicum.ewm.user.model.User;
 
 import java.time.LocalDateTime;
 
-@Component
 @RequiredArgsConstructor
 public class EventMapper {
 
-    private final CategoryMapper categoryMapper;
-    private final UserMapper userMapper;
-
-    public Event toEvent(NewEventDto newEventDto, Category category, User initiator) {
+    public static Event toEvent(NewEventDto newEventDto, Category category, User initiator) {
         return Event.builder()
                 .annotation(newEventDto.getAnnotation())
                 .category(category)
@@ -35,7 +30,7 @@ public class EventMapper {
                 .build();
     }
 
-    public void updateEventFromAdminRequest(UpdateEventAdminRequest request, Event event, Category category) {
+    public static void updateEventFromAdminRequest(UpdateEventAdminRequest request, Event event, Category category) {
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());
         }
@@ -65,7 +60,7 @@ public class EventMapper {
         }
     }
 
-    public void updateEventFromUserRequest(UpdateEventUserRequest request, Event event, Category category) {
+    public static void updateEventFromUserRequest(UpdateEventUserRequest request, Event event, Category category) {
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());
         }
@@ -95,16 +90,16 @@ public class EventMapper {
         }
     }
 
-    public EventFullDto toEventFullDto(Event event, Long confirmedRequests, Long views) {
+    public static EventFullDto toEventFullDto(Event event, Long confirmedRequests, Long views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
-                .category(categoryMapper.toCategoryDto(event.getCategory()))
+                .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .confirmedRequests(confirmedRequests)
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
-                .initiator(userMapper.toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -116,14 +111,14 @@ public class EventMapper {
                 .build();
     }
 
-    public EventShortDto toEventShortDto(Event event, Long confirmedRequests, Long views) {
+    public static EventShortDto toEventShortDto(Event event, Long confirmedRequests, Long views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
-                .category(categoryMapper.toCategoryDto(event.getCategory()))
+                .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .confirmedRequests(confirmedRequests)
                 .eventDate(event.getEventDate())
-                .initiator(userMapper.toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
                 .views(views)
