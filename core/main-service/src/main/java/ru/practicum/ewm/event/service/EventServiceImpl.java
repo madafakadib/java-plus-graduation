@@ -264,9 +264,9 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotFoundException("Published Event with id=" + id + " was not found");
         }
+        enrichEventWithViews(event);
 
         sendHit(uri, ip, LocalDateTime.now());
-        enrichEventWithViews(event);
 
         return event;
     }
