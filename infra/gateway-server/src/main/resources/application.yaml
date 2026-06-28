@@ -1,10 +1,24 @@
 spring:
   application:
     name: gateway-server
+  config:
+    import: "configserver:"
   cloud:
     config:
       discovery:
         enabled: true
-        service-id: config-server
-  config:
-    import: "optional:configserver:"
+        serviceId: config-server
+      fail-fast: true # приложение сразу упадет, если сервер конфигураций оказался недоступен
+      retry:
+        useRandomPolicy: true  # для повторных попыток будет использована стратегия random exponential backoff
+        max-interval: 6000 # максимально возможный интервал между попытками подключения.
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    preferIpAddress: true      # использовать IP вместо hostname для регистрации
+    hostname: localhost         # имя хоста (если preferIpAddress = false)
+    instance-id: "${spring.application.name}:${random.value}"  # уникальный ID экземпляра
+    leaseRenewalIntervalInSeconds: 10  # как часто отправлять "я жив" сигнал (heartbeat)
