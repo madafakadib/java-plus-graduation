@@ -8,17 +8,17 @@ spring:
       discovery:
         enabled: true
         serviceId: config-server
-      fail-fast: true # приложение сразу упадет, если сервер конфигураций оказался недоступен
+      fail-fast: true
       retry:
-        useRandomPolicy: true  # для повторных попыток будет использована стратегия random exponential backoff
-        max-interval: 6000 # максимально возможный интервал между попытками подключения.
+        useRandomPolicy: true
+        max-interval: 6000
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
   instance:
-    preferIpAddress: true      # использовать IP вместо hostname для регистрации
-    hostname: localhost         # имя хоста (если preferIpAddress = false)
-    instance-id: "${spring.application.name}:${random.value}"  # уникальный ID экземпляра
-    leaseRenewalIntervalInSeconds: 10  # как часто отправлять "я жив" сигнал (heartbeat)
+    preferIpAddress: true
+    hostname: localhost
+    instance-id: "${spring.application.name}:${random.value}"
+    leaseRenewalIntervalInSeconds: 10
