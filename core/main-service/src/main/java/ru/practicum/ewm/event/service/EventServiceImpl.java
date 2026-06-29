@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.categories.model.Category;
 import ru.practicum.ewm.categories.repository.CategoryRepository;
+import ru.practicum.ewm.comments.dto.CommentCountDto;
 import ru.practicum.ewm.comments.model.CommentStatus;
 import ru.practicum.ewm.comments.repository.CommentRepository;
 import ru.practicum.ewm.event.dto.*;
@@ -471,12 +472,12 @@ public class EventServiceImpl implements EventService {
                 .map(Commentable::getId)
                 .collect(Collectors.toList());
 
-        List<Object[]> counts = commentRepository.countByEventIdInAndStatus(ids, CommentStatus.APPROVED);
+        List<CommentCountDto> counts = commentRepository.countByEventIdInAndStatus(ids, CommentStatus.APPROVED);
         // просто переделываем список из массивов [id, count] в Map <id, count>
         Map<Long, Long> countsMap = counts.stream()
                 .collect(Collectors.toMap(
-                        arr -> (Long) arr[0], // берем первую цифру из массива - это eventId
-                        arr -> (Long) arr[1]  // берем вторую цифру из массива - это count
+                        CommentCountDto::getEventId,
+                        CommentCountDto::getCount
                 ));
 
         eventDtos.forEach(item -> item.setCommentsCount(countsMap.getOrDefault(item.getId(), 0L)));

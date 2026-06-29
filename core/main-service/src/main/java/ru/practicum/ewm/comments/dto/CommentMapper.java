@@ -39,15 +39,17 @@ public class CommentMapper {
     }
 
     public static void updateCommentFromAdminRequest(UpdateCommentAdminRequest request, Comment comment, User moderator) {
-        boolean updated = false; // флаг, был ли изменен коммент в итоге или только модератор поменял статус
+        boolean updated = false;
+
         if (request.getText() != null) {
             comment.setText(request.getText());
             updated = true;
         }
-        if (request.getStatus() != null) {  // модерация, это же не обновление по сути, а этап жизненного цикла, по этому updated не меняем
+        if (request.getStatus() != null) {
             comment.setStatus(request.getStatus());
             comment.setModerator(moderator);
             comment.setModeratedAt(LocalDateTime.now());
+            updated = true;
         }
         if (updated) {
             comment.setUpdated(LocalDateTime.now());
