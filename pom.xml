@@ -19,16 +19,19 @@
 
 
 	<modules>
-		<module>stats-service</module>
-		<module>ewm-service</module>
+        <module>core</module>
+		<module>infra</module>
+		<module>stats</module>
 	</modules>
 
 	<properties>
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spring-cloud.version>2023.0.3</spring-cloud.version>
 	</properties>
 
 	<dependencyManagement>
+
 		<dependencies>
 			<!-- H2 Database - версия для всех модулей -->
 			<dependency>
@@ -36,6 +39,14 @@
 				<artifactId>h2</artifactId>
 				<version>2.2.224</version>
 <!--				<scope>runtime</scope>-->
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
