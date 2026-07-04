@@ -2,14 +2,44 @@
 <project version="4">
   <component name="AmplicodePersistenceUnitSettings">
     <persistence-units>
-      <persistence-unit moduleName="main-service" name="Default">
-        <packages>
-          <package value="ru.practicum.ewm" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="stats-server" name="Default">
         <packages>
           <package value="ru.practicum.stats.server" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="event-service" name="Default">
+        <packages>
+          <package value="ru.practicum.event_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="common" name="Default">
+        <packages>
+          <package value="ru.practicum.common" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="user-service" name="Default">
+        <packages>
+          <package value="ru.practicum.user_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="category-service" name="Default">
+        <packages>
+          <package value="ru.practicum.category_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="request-service" name="Default">
+        <packages>
+          <package value="ru.practicum.request_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="compilation-service" name="Default">
+        <packages>
+          <package value="ru.practicum.compilation_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="comment-service" name="Default">
+        <packages>
+          <package value="ru.practicum.comment_service" />
         </packages>
       </persistence-unit>
     </persistence-units>

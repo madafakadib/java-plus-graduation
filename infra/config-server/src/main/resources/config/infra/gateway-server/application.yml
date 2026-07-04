@@ -20,72 +20,145 @@ spring:
           args:
             name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
       httpclient:
-        connect-timeout: 1000
-        response-timeout: 10s
+        connect-timeout: 5000
+        response-timeout: 30s
       routes:
-        - id: ewm-admin
-          uri: lb://main-service
+        # ============= USER SERVICE =============
+        - id: user-service-admin
+          uri: lb://user-service
           predicates:
-            - Path=/admin/**
+            - Path=/admin/users/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
               args:
-                name: ewmAdminService
+                name: user-service-admin
                 fallbackUri: forward:/fallback
 
-        - id: ewm-users
-          uri: lb://main-service
+        # ============= CATEGORY SERVICE =============
+        - id: admin-category-service
+          uri: lb://category-service
           predicates:
-            - Path=/users/**
+            - Path=/admin/categories/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
               args:
-                name: ewmUsersService
+                name: category-service-admin
                 fallbackUri: forward:/fallback
 
-        - id: ewm-events
-          uri: lb://main-service
-          predicates:
-            - Path=/events/**
-          filters:
-            - StripPrefix=0
-            - name: CircuitBreaker
-              args:
-                name: ewmEventsService
-                fallbackUri: forward:/fallback
-
-        - id: ewm-categories
-          uri: lb://main-service
+        - id: public-category-service
+          uri: lb://category-service
           predicates:
             - Path=/categories/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
               args:
-                name: ewmCategoriesService
+                name: category-service-public
                 fallbackUri: forward:/fallback
 
-        - id: ewm-compilations
-          uri: lb://main-service
+        # ============= REQUEST SERVICE =============
+        - id: request-service
+          uri: lb://request-service
+          predicates:
+            - Path=/users/**/requests/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: request-service
+                fallbackUri: forward:/fallback
+
+        # ============= COMPILATION SERVICE =============
+        - id: admin-compilation-service
+          uri: lb://compilation-service
+          predicates:
+            - Path=/admin/compilations/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: compilation-service-admin
+                fallbackUri: forward:/fallback
+
+        - id: public-compilation-service
+          uri: lb://compilation-service
           predicates:
             - Path=/compilations/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
               args:
-                name: ewmCompilationsService
+                name: compilation-service-public
                 fallbackUri: forward:/fallback
-        - id: ewm-comments
-          uri: lb://main-service
+
+        # ============= COMMENT SERVICE =============
+        - id: admin-comment-service
+          uri: lb://comment-service
           predicates:
-            - Path=/comments/**
+            - Path=/admin/comments/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
               args:
-                name: ewmСommentsService
+                name: comment-service-admin
+                fallbackUri: forward:/fallback
+
+        - id: private-comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/users/**/comments/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: comment-service-private
+                fallbackUri: forward:/fallback
+
+        - id: public-comment-service
+          uri: lb://comment-service
+          predicates:
+            - Path=/events/**/comments/**, /comments/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: comment-service-public
+                fallbackUri: forward:/fallback
+
+        # ============= EVENT SERVICE =============
+        - id: admin-event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: event-service-admin
+                fallbackUri: forward:/fallback
+
+        - id: private-event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/users/**/events/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: event-service-private
+                fallbackUri: forward:/fallback
+
+        - id: public-event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/events/**
+          filters:
+            - StripPrefix=0
+            - name: CircuitBreaker
+              args:
+                name: event-service-public
                 fallbackUri: forward:/fallback
 
 logging:
