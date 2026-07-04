@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS events (
     paid BOOLEAN NOT NULL,
     participant_limit INTEGER NOT NULL DEFAULT 0,
     request_moderation BOOLEAN NOT NULL DEFAULT true,
-    state VARCHAR(20) NOT NULL, -- PENDING, PUBLISHED, CANCELED
-    initiator_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
+    state VARCHAR(20) NOT NULL,
+    initiator_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
     lat FLOAT,
     lon FLOAT
 );
