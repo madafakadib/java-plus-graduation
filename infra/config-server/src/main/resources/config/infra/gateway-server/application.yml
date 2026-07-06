@@ -62,7 +62,7 @@ spring:
         - id: request-service
           uri: lb://request-service
           predicates:
-            - Path=/users/**/requests/**
+            - Path=/users/{userId}/requests/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
