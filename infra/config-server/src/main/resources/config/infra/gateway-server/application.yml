@@ -108,7 +108,7 @@ spring:
         - id: private-comment-service
           uri: lb://comment-service
           predicates:
-            - Path=/users/**/comments/**
+            - Path=/users/{userId}/comments/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
@@ -119,7 +119,7 @@ spring:
         - id: public-comment-service
           uri: lb://comment-service
           predicates:
-            - Path=/events/**/comments/**, /comments/**
+            - Path=/events/{eventId}/comments/**, /comments/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
@@ -142,7 +142,7 @@ spring:
         - id: private-event-service
           uri: lb://event-service
           predicates:
-            - Path=/users/**/events/**
+            - Path=/users/{userId}/events/**
           filters:
             - StripPrefix=0
             - name: CircuitBreaker
