@@ -22,19 +22,9 @@
           <package value="ru.practicum.user_service" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="category-service" name="Default">
-        <packages>
-          <package value="ru.practicum.category_service" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="request-service" name="Default">
         <packages>
           <package value="ru.practicum.request_service" />
-        </packages>
-      </persistence-unit>
-      <persistence-unit moduleName="compilation-service" name="Default">
-        <packages>
-          <package value="ru.practicum.compilation_service" />
         </packages>
       </persistence-unit>
       <persistence-unit moduleName="comment-service" name="Default">
