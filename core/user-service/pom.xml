@@ -112,7 +112,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.practicum.userService.user.UsersService</mainClass>
+                    <mainClass>ru.practicum.userService.user.UsersServiceApp</mainClass>
                 </configuration>
             </plugin>
 

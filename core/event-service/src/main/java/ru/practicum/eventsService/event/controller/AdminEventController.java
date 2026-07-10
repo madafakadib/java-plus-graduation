@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.common.aop.annotation.Loggable;
 import ru.practicum.common.dto.events.EventFullDto;
 import ru.practicum.eventsService.event.dto.UpdateEventAdminRequest;
 import ru.practicum.eventsService.event.dto.paramDto.AdminUserEventParam;
@@ -23,7 +22,6 @@ public class AdminEventController {
     private final EventService eventService;
 
     @GetMapping
-    @Loggable
     public List<EventFullDto> getEvents(@Valid AdminUserEventParam param) {
         log.debug("Admin request to get events: {}", param);
         return eventService.getEventsForAdminRequests(param);
@@ -32,7 +30,6 @@ public class AdminEventController {
 
     // Валидация данных не требуется, по спецификации
     @PatchMapping("/{eventId}")
-    @Loggable
     public EventFullDto updateEvent(
             @PathVariable long eventId,
             @RequestBody @Valid UpdateEventAdminRequest body) {

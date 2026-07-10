@@ -8,7 +8,7 @@ import ru.practicum.eventsService.categories.model.Category;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "events", schema = "events")
+@Table(name = "events")
 @Builder
 @Getter
 @Setter

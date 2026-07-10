@@ -10,6 +10,11 @@
     </parent>
 
     <packaging>pom</packaging>
+
+    <properties>
+        <querydsl.version>5.0.0</querydsl.version>
+    </properties>
+
     <modules>
         <module>event-service</module>
         <module>request-service</module>
@@ -20,23 +25,13 @@
 
     <artifactId>core</artifactId>
 
-    <properties>
-        <querydsl.version>5.0.0</querydsl.version>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-jpa</artifactId>
-                <classifier>jakarta</classifier>
                 <version>${querydsl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.querydsl</groupId>
-                <artifactId>querydsl-apt</artifactId>
                 <classifier>jakarta</classifier>
-                <version>${querydsl.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

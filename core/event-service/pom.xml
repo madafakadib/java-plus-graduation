@@ -149,7 +149,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.practicum.eventsService.EventsService</mainClass>
+                    <mainClass>ru.practicum.eventsService.EventsServiceApp</mainClass>
                 </configuration>
             </plugin>
 

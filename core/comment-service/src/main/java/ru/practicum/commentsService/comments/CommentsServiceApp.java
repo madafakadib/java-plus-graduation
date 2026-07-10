@@ -1,4 +1,4 @@
-package ru.practicum.eventsService;
+package ru.practicum.commentsService.comments;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,12 +8,11 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableFeignClients
 @ComponentScan(basePackages = {
-        "ru.practicum.eventsService",
-        "ru.practicum.stat",
+        "ru.practicum.commentsService",
         "ru.practicum.common"
 })
-public class EventsService {
+public class CommentsServiceApp {
     public static void main(String[] args) {
-        SpringApplication.run(EventsService.class, args);
+        SpringApplication.run(CommentsServiceApp.class, args);
     }
 }

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "categories", schema = "events")
+@Table(name = "categories")
 @Builder
 @Getter
 @Setter

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "compilations", schema = "events")
+@Table(name = "compilations")
 @Builder
 @Getter
 @Setter

@@ -7,8 +7,7 @@ import ru.practicum.common.dto.participationRequest.RequestStatus;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests", schema = "requests",
-        uniqueConstraints = {
+@Table(name = "requests", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"event_id", "requester_id"})
 })
 @Builder

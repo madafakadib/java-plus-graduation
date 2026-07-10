@@ -104,7 +104,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.practicum.commentsService.comments.CommentsService</mainClass>
+                    <mainClass>ru.practicum.commentsService.comments.CommentsServiceApp</mainClass>
                 </configuration>
             </plugin>
 

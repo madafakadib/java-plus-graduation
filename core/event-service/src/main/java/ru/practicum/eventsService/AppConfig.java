@@ -24,4 +24,5 @@ public class AppConfig {
         return new JPAQueryFactory(entityManager);
     }
 
+
 }

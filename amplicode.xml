@@ -7,11 +7,6 @@
           <package value="ru.practicum.stats.server" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="category-service" name="Default">
-        <packages>
-          <package value="ru.practicum.category" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="event-service" name="Default">
         <packages>
           <package value="ru.practicum" />
@@ -20,11 +15,6 @@
       <persistence-unit moduleName="request-service" name="Default">
         <packages>
           <package value="ru.practicum" />
-        </packages>
-      </persistence-unit>
-      <persistence-unit moduleName="category-service" name="Default">
-        <packages>
-          <package value="ru.practicum.category_service" />
         </packages>
       </persistence-unit>
       <persistence-unit moduleName="request-service" name="Default">
@@ -40,6 +30,12 @@
       <persistence-unit moduleName="comment-service" name="Default">
         <packages>
           <package value="ru.practicum.comment_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="common" name="Default" />
+      <persistence-unit moduleName="user-service" name="Default">
+        <packages>
+          <package value="ru.practicum.userService.user" />
         </packages>
       </persistence-unit>
     </persistence-units>

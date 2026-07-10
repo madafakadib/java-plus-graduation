@@ -14,6 +14,7 @@ public class AppConfig {
         this.entityManager = entityManager;
     }
 
+    // бин JPAQueryFactory для QueryDSL
     @Bean
     public JPAQueryFactory jpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
