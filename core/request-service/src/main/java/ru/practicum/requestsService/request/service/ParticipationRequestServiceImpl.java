@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.common.aop.annotation.Loggable;
 import ru.practicum.common.dto.events.EventBaseDto;
 import ru.practicum.common.dto.events.EventState;
 import ru.practicum.common.dto.participationRequest.EventRequestStatusUpdateRequest;
@@ -36,7 +35,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
 
     @Override
-    @Loggable
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
         // DataIntegrityViolationException c 409 кодом и так будет при нарушении уникальности в БД, но можно и явно проверить
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {

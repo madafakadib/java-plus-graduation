@@ -1,20 +1,19 @@
-package ru.practicum.requestsService.request;
+package ru.practicum.eventsService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableAspectJAutoProxy // для AOP, логирование через аннотации @Loggable
 @ComponentScan(basePackages = {
-        "ru.practicum.requestsService.request",
+        "ru.practicum.eventsService",
+        "ru.practicum.stat",
         "ru.practicum.common"
 })
-public class RequestsServiceApp {
+public class EventsService {
     public static void main(String[] args) {
-        SpringApplication.run(RequestsServiceApp.class, args);
+        SpringApplication.run(EventsService.class, args);
     }
 }

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.common.aop.annotation.Loggable;
 import ru.practicum.common.dto.events.EventFullDto;
 import ru.practicum.common.dto.events.EventShortDto;
 import ru.practicum.common.dto.participationRequest.EventRequestStatusUpdateRequest;
@@ -31,7 +30,6 @@ public class PrivateEventController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Loggable
     public EventFullDto addEvent(@PathVariable long userId,
                                  @RequestBody @Valid NewEventDto newEventDto) {
         log.debug("Request to add new event:  userId={}", userId);
@@ -40,7 +38,6 @@ public class PrivateEventController {
     }
 
     @GetMapping
-    @Loggable
     public List<EventShortDto> getUserEvents(@PathVariable long userId,
                                              @RequestParam(defaultValue = "0") @Min(0) int from,
                                              @RequestParam(defaultValue = "10") @Positive int size) {
@@ -50,7 +47,6 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}")
-    @Loggable
     public EventFullDto getUserEvent(@PathVariable long userId,
                                      @PathVariable long eventId) {
         log.debug("Request to get user event:  userId={}, eventId={}", userId, eventId);
@@ -59,7 +55,6 @@ public class PrivateEventController {
     }
 
     @PatchMapping("/{eventId}")
-    @Loggable
     public EventFullDto updateUserEvent(@PathVariable long userId,
                                         @PathVariable long eventId,
                                         @RequestBody @Valid UpdateEventUserRequest body) {
@@ -69,7 +64,6 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}/requests")
-    @Loggable
     public List<ParticipationRequestDto> getParticipationRequests(@PathVariable long userId,
                                                                   @PathVariable long eventId) {
         log.debug("Request to get Participation Requests for user event:  userId={}, eventId={}", userId, eventId);
@@ -78,7 +72,6 @@ public class PrivateEventController {
     }
 
     @PatchMapping("/{eventId}/requests")
-    @Loggable
     public EventRequestStatusUpdateResult updateRequestStatuses(@PathVariable long userId,
                                                                 @PathVariable long eventId,
                                                                 @RequestBody EventRequestStatusUpdateRequest request) {

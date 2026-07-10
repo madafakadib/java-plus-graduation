@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.common.aop.annotation.Loggable;
 import ru.practicum.common.dto.users.UserDto;
 import ru.practicum.common.dto.users.UserShortDto;
 import ru.practicum.common.exceptions.exceptions.NotFoundException;
@@ -35,9 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    @Loggable
     public UserDto createUser(NewUserRequest newUserRequest) {
-        // Email не проверяется на уникальность, т.к. отлавливается DataIntegrityViolationException при нарушении UNIQUE в БД
         User user = userRepository.save(UserMapper.toUser(newUserRequest));
         log.info("Created user with id: {}", user.getId());
 
