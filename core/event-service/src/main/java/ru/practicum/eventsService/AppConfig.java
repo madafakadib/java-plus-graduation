@@ -24,5 +24,13 @@ public class AppConfig {
         return new JPAQueryFactory(entityManager);
     }
 
+    // бин RestTemplate для StatsClient
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofSeconds(5))
+                .setReadTimeout(Duration.ofSeconds(5))
+                .build();
+    }
 
 }
