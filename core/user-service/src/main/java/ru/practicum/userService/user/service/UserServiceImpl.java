@@ -66,7 +66,6 @@ public class UserServiceImpl implements UserService {
             return Map.of();
         }
 
-        // Убираем дубликаты
         List<Long> uniqueIds = userIds.stream().distinct().collect(Collectors.toList());
 
         List<User> users = userRepository.findAllById(uniqueIds);
@@ -75,7 +74,6 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toMap(
                                 User::getId,
                                 UserMapper::toUserShortDto)
-//                        user -> new UserShortDto(user.getId(), user.getName())
                 );
     }
 
