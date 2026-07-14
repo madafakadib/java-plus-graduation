@@ -3,6 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ru.practicum</groupId>
         <artifactId>explore-with-me</artifactId>
@@ -11,18 +12,71 @@
 
     <artifactId>stats</artifactId>
     <packaging>pom</packaging>
-    <modules>
-        <module>stats-client</module>
-        <module>collector</module>
-        <module>serialization</module>
-        <module>aggregator</module>
-        <module>analyzer</module>
-    </modules>
 
     <properties>
-<!--        <maven.compiler.source>21</maven.compiler.source>-->
-<!--        <maven.compiler.target>21</maven.compiler.target>-->
-<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+        <grpc.version>2.15.0.RELEASE</grpc.version>
+        <protobuf.version>3.25.3</protobuf.version>
+        <avro.version>1.11.3</avro.version>
+        <spring-cloud.version>2023.0.0</spring-cloud.version>
     </properties>
+
+    <modules>
+        <module>serialization</module>
+        <module>collector</module>
+        <module>aggregator</module>
+        <module>analyzer</module>
+        <module>stats-client</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- gRPC -->
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-client-spring-boot-starter</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-server-spring-boot-starter</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+
+            <!-- Protobuf -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
+            <!-- Avro -->
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+
+            <!-- Spring Cloud -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Схемы -->
+            <dependency>
+                <groupId>ru.practicum</groupId>
+                <artifactId>proto-schema</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.practicum</groupId>
+                <artifactId>avro-schema</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
