@@ -15,6 +15,11 @@ spring:
             - classpath:config/core/{application}
             - classpath:config/infra/{application}
             - classpath:config/stats/{application}
+    retry:
+      max-attempts: 20           # количество попыток
+      initial-interval: 2000     # начальная задержка в мс (2 секунды)
+      multiplier: 1.0            # множитель для увеличения интервала (1.0 - без увеличения)
+      max-interval: 2000         # максимальный интервал
 
 eureka:
   client:
@@ -22,7 +27,7 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     preferIpAddress: true
-    instance-id: "${spring.application.name}:${random.value}"
+    instance-id: "${spring.application.name}:${random.value}"  # уникальный ID экземпляра
     hostname: localhost
 
 

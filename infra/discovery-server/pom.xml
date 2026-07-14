@@ -35,7 +35,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.EurecaApp</mainClass>
+                    <mainClass>ru.yandex.practicum.EurekaApp</mainClass>
                 </configuration>
                 <executions>
                     <execution>
