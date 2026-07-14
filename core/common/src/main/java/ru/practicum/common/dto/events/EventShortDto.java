@@ -1,7 +1,8 @@
 package ru.practicum.common.dto.events;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,14 +16,16 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventShortDto implements Enrichable  {
+public class EventShortDto implements Enrichable, HasRating {
     private Long id;
 
+    @NotBlank
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     private CategoryDto category;
 
-    private Long confirmedRequests;  // из запросов на участие
+    private Long confirmedRequests;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
@@ -31,14 +34,11 @@ public class EventShortDto implements Enrichable  {
 
     private Boolean paid;
 
-    @JsonIgnore
-    // подгрузим даты публикаций, для расчета минимальной даты для запроса статистики, но клиенту отправлять не будем
-    private LocalDateTime publishedOn;
-
+    @NotBlank
+    @Size(min = 3, max = 120)
     private String title;
-
-    private Long views;  // подгружаем отдельно из сервиса статистики
 
     private Long commentsCount;
 
+    private Double rating;
 }

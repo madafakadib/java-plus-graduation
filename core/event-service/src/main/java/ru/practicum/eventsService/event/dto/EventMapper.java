@@ -90,7 +90,7 @@ public class EventMapper {
         }
     }
 
-    public static EventFullDto toEventFullDto(Event event, Long confirmedRequests, Long views, UserShortDto initiator) {
+    public static EventFullDto toEventFullDto(Event event, Long confirmedRequests, Double rating, UserShortDto initiator) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -107,11 +107,11 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .views(views)
+                .rating(rating)
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, Long confirmedRequests, Long views) {
+    public static EventShortDto toEventShortDto(Event event, Long confirmedRequests, Double rating) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -125,8 +125,12 @@ public class EventMapper {
                 )
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(views)
+                .rating(rating)
                 .build();
+    }
+
+    public static EventShortDto toEventShortDto(Event event, Long confirmedRequests) {
+        return toEventShortDto(event, confirmedRequests, 0.0);
     }
 
     public static EventBaseDto toEventBaseDto(Event event) {
@@ -156,24 +160,20 @@ public class EventMapper {
                 .build();
     }
 
-
     private static EventLocation toEventLocation(Location location) {
         if (location == null) {
             return null;
         }
-
         return EventLocation.builder()
                 .lat(location.getLat())
                 .lon(location.getLon())
                 .build();
     }
 
-
     private static Location toLocation(EventLocation location) {
         if (location == null) {
             return null;
         }
-
         return Location.builder()
                 .lat(location.getLat())
                 .lon(location.getLon())

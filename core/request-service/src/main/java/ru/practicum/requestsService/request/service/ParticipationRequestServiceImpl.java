@@ -18,6 +18,7 @@ import ru.practicum.requestsService.request.client.UserClient;
 import ru.practicum.requestsService.request.dto.ParticipationRequestMapper;
 import ru.practicum.requestsService.request.model.ParticipationRequest;
 import ru.practicum.requestsService.request.repository.ParticipationRequestRepository;
+import ru.practicum.stat.client.CollectorClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +33,20 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     private final ParticipationRequestRepository requestRepository;
     private final UserClient userClient;
     private final EventClient eventClient;
-
+    private final CollectorClient collectorClient;
 
     @Override
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        // DataIntegrityViolationException c 409 кодом и так будет при нарушении уникальности в БД, но можно и явно проверить
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
             throw new ConditionsNotMetException("Request already exists for this event");
         }
 
-        UserShortDto user = userClient.getUserShortById(userId); // ошибки обрабатываются в FallbackFactory
+        UserShortDto user = userClient.getUserShortById(userId);
         if (user == null) {
             throw new NotFoundException("User with id=" + userId + " not found");
         }
 
-        EventBaseDto event = eventClient.getBaseEventInfo(eventId); // ошибки обрабатываются в FallbackFactory
+        EventBaseDto event = eventClient.getBaseEventInfo(eventId);
         if (event == null) {
             throw new NotFoundException("Event with id=" + eventId + " not found");
         }
@@ -72,6 +72,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
         request = requestRepository.save(request);
 
+        if (request.getStatus() == RequestStatus.CONFIRMED) {
+            collectorClient.sendRegistration(userId, eventId);
+            log.info("Отправлена регистрация в Collector: userId={}, eventId={}", userId, eventId);
+        }
+
         return ParticipationRequestMapper.toParticipationRequestDto(request);
     }
 
@@ -96,7 +101,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new NotFoundException("Request with id=" + requestId + " not found for user with id=" + userId);
         }
 
-        // отменить можно только PENDING и CONFIRMED? в ТЗ явно не указано
         if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.CONFIRMED) {
             throw new ConditionsNotMetException("Only requests with PENDING or CONFIRMED status can be canceled. Current status: " + request.getStatus());
         }
@@ -123,14 +127,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Override
     @Transactional
     public EventRequestStatusUpdateResult updateRequestStatuses(Long eventId, int limit, EventRequestStatusUpdateRequest updateRequest) {
-        // Проверяем, что заявки существуют
         List<ParticipationRequest> requests = requestRepository.findByIdIn(updateRequest.getRequestIds());
 
         if (requests.isEmpty()) {
             throw new NotFoundException("Requests not found for ids: " + updateRequest.getRequestIds());
         }
 
-        // Проверяем, что все заявки относятся к данному событию
         for (ParticipationRequest r : requests) {
             if (!r.getEventId().equals(eventId)) {
                 throw new ConditionsNotMetException("Request with id=" + r.getId() + " is not related to event=" + eventId);
@@ -143,7 +145,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         List<ParticipationRequest> approved = new ArrayList<>();
         List<ParticipationRequest> rejected = new ArrayList<>();
 
-        // Получаем текущее количество подтвержденных заявок
         long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
         if (updateRequest.getStatus().equals(RequestStatus.CONFIRMED)) {
@@ -159,11 +160,14 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             rejected.addAll(requests);
         }
 
-        // Обновляем статусы в БД
         updateStatuses(approved, RequestStatus.CONFIRMED);
         updateStatuses(rejected, RequestStatus.REJECTED);
 
-        // Если лимит исчерпан, отклоняем все остальные PENDING заявки
+        for (ParticipationRequest r : approved) {
+            collectorClient.sendRegistration(r.getRequesterId(), r.getEventId());
+            log.info("Отправлена регистрация в Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId());
+        }
+
         if (limit > 0 && confirmedCount >= limit) {
             requestRepository.updateStatusByEventId(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
         }
