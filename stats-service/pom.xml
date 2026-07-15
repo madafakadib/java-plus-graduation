@@ -14,7 +14,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <grpc.version>2.15.0.RELEASE</grpc.version>
+        <grpc.version>1.58.0</grpc.version>
+        <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
         <protobuf.version>3.25.3</protobuf.version>
         <avro.version>1.11.3</avro.version>
     </properties>
@@ -29,38 +30,42 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- gRPC -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>net.devh</groupId>
                 <artifactId>grpc-client-spring-boot-starter</artifactId>
-                <version>${grpc.version}</version>
+                <version>${grpc-spring-boot-starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.devh</groupId>
                 <artifactId>grpc-server-spring-boot-starter</artifactId>
-                <version>${grpc.version}</version>
+                <version>${grpc-spring-boot-starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.devh</groupId>
                 <artifactId>grpc-common-spring-boot</artifactId>
-                <version>${grpc.version}</version>
+                <version>${grpc-spring-boot-starter.version}</version>
             </dependency>
 
-            <!-- Protobuf -->
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <version>${protobuf.version}</version>
             </dependency>
 
-            <!-- Avro -->
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${avro.version}</version>
             </dependency>
 
-            <!-- Схемы -->
             <dependency>
                 <groupId>ru.practicum</groupId>
                 <artifactId>proto-schema</artifactId>
