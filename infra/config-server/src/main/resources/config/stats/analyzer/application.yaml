@@ -18,9 +18,9 @@ spring:
       mode: always
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6543/ewm_analyzer
-    username: main
-    password: main
+    url: jdbc:postgresql://localhost:5432/ewm
+    username: postgres
+    password: postgres
 
 analyzer:
   kafka:

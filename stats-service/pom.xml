@@ -40,6 +40,11 @@
                 <artifactId>grpc-server-spring-boot-starter</artifactId>
                 <version>${grpc.version}</version>
             </dependency>
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-common-spring-boot</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
 
             <!-- Protobuf -->
             <dependency>
