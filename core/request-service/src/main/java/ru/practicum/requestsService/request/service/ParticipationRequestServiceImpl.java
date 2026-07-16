@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import feign.FeignException;
 import ru.practicum.common.dto.events.EventBaseDto;
 import ru.practicum.common.dto.events.EventState;
 import ru.practicum.common.dto.participationRequest.EventRequestStatusUpdateRequest;
@@ -37,18 +38,34 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
+        if (eventId == null || eventId <= 0) {
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
+        }
+
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
             throw new ConditionsNotMetException("Request already exists for this event");
         }
 
-        UserShortDto user = userClient.getUserShortById(userId);
+        UserShortDto user;
+        try {
+            user = userClient.getUserShortById(userId);
+        } catch (FeignException.NotFound e) {
+            throw new NotFoundException("User with id=" + userId + " not found");
+        }
+
         if (user == null) {
             throw new NotFoundException("User with id=" + userId + " not found");
         }
 
-        EventBaseDto event = eventClient.getBaseEventInfo(eventId);
+        EventBaseDto event;
+        try {
+            event = eventClient.getBaseEventInfo(eventId);
+        } catch (FeignException.NotFound e) {
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
+        }
+
         if (event == null) {
-            throw new NotFoundException("Event with id=" + eventId + " not found");
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
         }
 
         if (event.getInitiator().getId().equals(userId)) {
@@ -127,12 +144,14 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Override
     @Transactional
     public EventRequestStatusUpdateResult updateRequestStatuses(Long eventId, int limit, EventRequestStatusUpdateRequest updateRequest) {
+        // Получаем запросы по их ID
         List<ParticipationRequest> requests = requestRepository.findByIdIn(updateRequest.getRequestIds());
 
         if (requests.isEmpty()) {
             throw new NotFoundException("Requests not found for ids: " + updateRequest.getRequestIds());
         }
 
+        // Валидация: все запросы должны принадлежать событию и иметь статус PENDING
         for (ParticipationRequest r : requests) {
             if (!r.getEventId().equals(eventId)) {
                 throw new ConditionsNotMetException("Request with id=" + r.getId() + " is not related to event=" + eventId);
@@ -157,21 +176,49 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 }
             }
         } else {
+            // Статус REJECTED
             rejected.addAll(requests);
         }
 
-        updateStatuses(approved, RequestStatus.CONFIRMED);
-        updateStatuses(rejected, RequestStatus.REJECTED);
-
-        for (ParticipationRequest r : approved) {
-            collectorClient.sendRegistration(r.getRequesterId(), r.getEventId());
-            log.info("Отправлена регистрация в Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId());
+        // ОБНОВЛЯЕМ СТАТУСЫ В БАЗЕ ДАННЫХ
+        if (!approved.isEmpty()) {
+            List<Long> approvedIds = approved.stream()
+                    .map(ParticipationRequest::getId)
+                    .collect(Collectors.toList());
+            requestRepository.updateStatusByIdIn(approvedIds, RequestStatus.CONFIRMED);
+            // Устанавливаем статус в объектах
+            approved.forEach(r -> r.setStatus(RequestStatus.CONFIRMED));
         }
 
+        if (!rejected.isEmpty()) {
+            List<Long> rejectedIds = rejected.stream()
+                    .map(ParticipationRequest::getId)
+                    .collect(Collectors.toList());
+            requestRepository.updateStatusByIdIn(rejectedIds, RequestStatus.REJECTED);
+            // Устанавливаем статус в объектах
+            rejected.forEach(r -> r.setStatus(RequestStatus.REJECTED));
+        }
+
+        // Сохраняем изменения
+        requestRepository.saveAll(approved);
+        requestRepository.saveAll(rejected);
+
+        // Отправляем события регистрации для одобренных запросов
+        for (ParticipationRequest r : approved) {
+            try {
+                collectorClient.sendRegistration(r.getRequesterId(), r.getEventId());
+                log.info("Отправлена регистрация в Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId());
+            } catch (Exception e) {
+                log.error("Failed to send registration to Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId(), e);
+            }
+        }
+
+        // Если лимит достигнут, отклоняем все остальные ожидающие запросы
         if (limit > 0 && confirmedCount >= limit) {
             requestRepository.updateStatusByEventId(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
         }
 
+        // Возвращаем результат с актуальными данными
         return ParticipationRequestMapper.toEventRequestStatusUpdateResult(approved, rejected);
     }
 

@@ -41,4 +41,6 @@ public class EventShortDto implements Enrichable, HasRating {
     private Long commentsCount;
 
     private Double rating;
+
+    private Long views;
 }

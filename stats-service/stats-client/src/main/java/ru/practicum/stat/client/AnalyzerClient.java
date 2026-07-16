@@ -2,10 +2,7 @@ package ru.practicum.stat.client;
 
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewm.stats.messages.InteractionsCountRequestProto;
-import ru.practicum.ewm.stats.messages.RecommendedEventProto;
-import ru.practicum.ewm.stats.messages.SimilarEventsRequestProto;
-import ru.practicum.ewm.stats.messages.UserPredictionsRequestProto;
+import ru.practicum.ewm.stats.messages.*;
 import ru.practicum.ewm.stats.services.RecommendationsControllerGrpc;
 
 import java.util.ArrayList;

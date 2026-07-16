@@ -202,10 +202,22 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Published Event with id=" + eventId + " was not found");
         }
 
-        collectorClient.sendView(userId, eventId);
+        try {
+            collectorClient.sendView(userId, eventId);
+        } catch (Exception e) {
+            log.warn("Failed to send view for event {}: {}", eventId, e.getMessage());
+        }
 
-        double rating = getEventRating(eventId);
-        event.setRating(rating);
+        Long currentViews = event.getViews() != null ? event.getViews() : 0L;
+        event.setViews(currentViews + 1);
+
+        try {
+            double rating = getEventRating(eventId);
+            event.setRating(rating);
+        } catch (Exception e) {
+            log.warn("Failed to get rating for event {}: {}", eventId, e.getMessage());
+            event.setRating(0.0);
+        }
 
         enrichEvent(event);
 
@@ -226,8 +238,16 @@ public class EventServiceImpl implements EventService {
             log.warn("Failed to send view for event {}: {}", eventId, e.getMessage());
         }
 
-        double rating = getEventRating(eventId);
-        event.setRating(rating);
+        Long currentViews = event.getViews() != null ? event.getViews() : 0L;
+        event.setViews(currentViews + 1);
+
+        try {
+            double rating = getEventRating(eventId);
+            event.setRating(rating);
+        } catch (Exception e) {
+            log.warn("Failed to get rating for event {}: {}", eventId, e.getMessage());
+            event.setRating(0.0);
+        }
 
         enrichEvent(event);
 
