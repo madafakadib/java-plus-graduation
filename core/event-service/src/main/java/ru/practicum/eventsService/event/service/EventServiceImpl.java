@@ -213,6 +213,28 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public EventFullDto findPublicEventById(Long eventId, String ip) {
+        EventFullDto event = findEventFullDtoById(eventId);
+
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new NotFoundException("Published Event with id=" + eventId + " was not found");
+        }
+
+        try {
+            collectorClient.sendView(0L, eventId);
+        } catch (Exception e) {
+            log.warn("Failed to send view for event {}: {}", eventId, e.getMessage());
+        }
+
+        double rating = getEventRating(eventId);
+        event.setRating(rating);
+
+        enrichEvent(event);
+
+        return event;
+    }
+
+    @Override
     public List<ParticipationRequestDto> getParticipationRequests(Long userId, Long eventId) {
         Event event = getEventById(eventId);
 

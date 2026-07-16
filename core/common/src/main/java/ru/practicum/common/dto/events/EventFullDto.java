@@ -59,4 +59,6 @@ public class EventFullDto implements Enrichable, HasRating {
     private Double rating;
 
     private Long commentsCount;
+
+    private Long views;
 }

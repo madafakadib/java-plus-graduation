@@ -41,7 +41,7 @@ public class PublicEventController {
 
         log.debug("Request to get event: uri={}, ip={}, id={}", request.getRequestURI(), request.getRemoteAddr(), id);
 
-        return eventService.findEventById(request.getRequestURI(), request.getRemoteAddr(), id);
+        return eventService.findPublicEventById(id, request.getRemoteAddr());
     }
 
 
