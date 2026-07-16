@@ -11,3 +11,9 @@ spring:
   output:
     ansi:
       enabled: always
+
+grpc:
+  server:
+    port: 0
+    security:
+      enabled: false
