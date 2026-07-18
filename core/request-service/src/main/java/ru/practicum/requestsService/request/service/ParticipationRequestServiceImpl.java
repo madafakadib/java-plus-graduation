@@ -17,6 +17,7 @@ import ru.practicum.common.exceptions.exceptions.NotFoundException;
 import ru.practicum.requestsService.request.client.EventClient;
 import ru.practicum.requestsService.request.client.UserClient;
 import ru.practicum.requestsService.request.dto.ParticipationRequestMapper;
+import ru.practicum.common.dto.participationRequest.RegistrationRequest;
 import ru.practicum.requestsService.request.model.ParticipationRequest;
 import ru.practicum.requestsService.request.repository.ParticipationRequestRepository;
 import ru.practicum.stat.client.CollectorClient;
@@ -143,15 +144,17 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult updateRequestStatuses(Long eventId, int limit, EventRequestStatusUpdateRequest updateRequest) {
-        // Получаем запросы по их ID
+    public EventRequestStatusUpdateResult updateRequestStatuses(
+            Long eventId,
+            int limit,
+            EventRequestStatusUpdateRequest updateRequest
+    ) {
         List<ParticipationRequest> requests = requestRepository.findByIdIn(updateRequest.getRequestIds());
 
         if (requests.isEmpty()) {
             throw new NotFoundException("Requests not found for ids: " + updateRequest.getRequestIds());
         }
 
-        // Валидация: все запросы должны принадлежать событию и иметь статус PENDING
         for (ParticipationRequest r : requests) {
             if (!r.getEventId().equals(eventId)) {
                 throw new ConditionsNotMetException("Request with id=" + r.getId() + " is not related to event=" + eventId);
@@ -176,17 +179,14 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 }
             }
         } else {
-            // Статус REJECTED
             rejected.addAll(requests);
         }
 
-        // ОБНОВЛЯЕМ СТАТУСЫ В БАЗЕ ДАННЫХ
         if (!approved.isEmpty()) {
             List<Long> approvedIds = approved.stream()
                     .map(ParticipationRequest::getId)
                     .collect(Collectors.toList());
             requestRepository.updateStatusByIdIn(approvedIds, RequestStatus.CONFIRMED);
-            // Устанавливаем статус в объектах
             approved.forEach(r -> r.setStatus(RequestStatus.CONFIRMED));
         }
 
@@ -195,30 +195,33 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                     .map(ParticipationRequest::getId)
                     .collect(Collectors.toList());
             requestRepository.updateStatusByIdIn(rejectedIds, RequestStatus.REJECTED);
-            // Устанавливаем статус в объектах
             rejected.forEach(r -> r.setStatus(RequestStatus.REJECTED));
         }
 
-        // Сохраняем изменения
         requestRepository.saveAll(approved);
         requestRepository.saveAll(rejected);
 
-        // Отправляем события регистрации для одобренных запросов
-        for (ParticipationRequest r : approved) {
-            try {
-                collectorClient.sendRegistration(r.getRequesterId(), r.getEventId());
-                log.info("Отправлена регистрация в Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId());
-            } catch (Exception e) {
-                log.error("Failed to send registration to Collector: userId={}, eventId={}", r.getRequesterId(), r.getEventId(), e);
+        if (!approved.isEmpty()) {
+            List<RegistrationRequest> registrations = approved.stream()
+                    .map(r -> new RegistrationRequest(r.getRequesterId(), r.getEventId()))
+                    .collect(Collectors.toList());
+            collectorClient.sendRegistrationsBatch(registrations);
+        }
+
+        if (limit > 0 && confirmedCount >= limit) {
+            List<ParticipationRequest> pendingRequests =
+                    requestRepository.findByEventIdAndStatus(eventId, RequestStatus.PENDING);
+
+            if (!pendingRequests.isEmpty()) {
+                List<Long> pendingIds = pendingRequests.stream()
+                        .map(ParticipationRequest::getId)
+                        .collect(Collectors.toList());
+                requestRepository.updateStatusByIdIn(pendingIds, RequestStatus.REJECTED);
+                pendingRequests.forEach(r -> r.setStatus(RequestStatus.REJECTED));
+                requestRepository.saveAll(pendingRequests);
             }
         }
 
-        // Если лимит достигнут, отклоняем все остальные ожидающие запросы
-        if (limit > 0 && confirmedCount >= limit) {
-            requestRepository.updateStatusByEventId(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
-        }
-
-        // Возвращаем результат с актуальными данными
         return ParticipationRequestMapper.toEventRequestStatusUpdateResult(approved, rejected);
     }
 

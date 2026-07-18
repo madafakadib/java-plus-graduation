@@ -11,4 +11,7 @@ option java_package = "ru.practicum.ewm.stats.services";
 service UserActionController {
   rpc CollectUserAction (messages.user.UserActionProto)
       returns (google.protobuf.Empty);
+
+  rpc CollectUserActionsBatch(messages.user.UserActionBatchProto)
+      returns (google.protobuf.Empty);
 }

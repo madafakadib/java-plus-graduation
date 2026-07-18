@@ -18,3 +18,7 @@ enum ActionTypeProto {
     ACTION_REGISTER = 1;
     ACTION_LIKE = 2;
 }
+
+message UserActionBatchProto {
+    repeated UserActionProto actions = 1;
+}
