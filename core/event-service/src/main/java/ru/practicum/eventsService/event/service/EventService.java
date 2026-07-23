@@ -39,5 +39,6 @@ public interface EventService {
 
     List<EventShortDto> getShortDtosByIds(Collection<Long> eventIds);
 
+    EventFullDto findPublicEventById(Long eventId, String ip);
 
 }

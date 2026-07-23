@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventFullDto implements Enrichable  {
+public class EventFullDto implements Enrichable, HasRating {
     private Long id;
 
     @NotBlank
@@ -25,7 +25,7 @@ public class EventFullDto implements Enrichable  {
 
     private CategoryDto category;
 
-    private Long confirmedRequests;  // из таблицы запросов на участие
+    private Long confirmedRequests;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
@@ -43,12 +43,12 @@ public class EventFullDto implements Enrichable  {
 
     private Boolean paid;
 
-    private Integer participantLimit;  // по умолчанию 0
+    private Integer participantLimit;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedOn;
 
-    private Boolean requestModeration;  // по умолчанию true
+    private Boolean requestModeration;
 
     private EventState state;
 
@@ -56,8 +56,9 @@ public class EventFullDto implements Enrichable  {
     @Size(min = 3, max = 120)
     private String title;
 
-    private Long views;  // из сервиса статистики
+    private Double rating;
 
     private Long commentsCount;
 
+    private Long views;
 }

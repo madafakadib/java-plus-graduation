@@ -41,95 +41,73 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                 .select(Projections.constructor(EventShortDto.class,
                         event.id,
                         event.annotation,
-                        Projections.constructor(CategoryDto.class, event.category.id, event.category.name), // проекция в DTO
-                        Expressions.asNumber(0L).as("confirmedRequests"), // confirmedRequests заполняется в сервисе через Feign Client.
+                        Projections.constructor(CategoryDto.class,
+                                event.category.id,
+                                event.category.name
+                        ),
+                        Expressions.asNumber(0L).as("confirmedRequests"),
                         event.eventDate,
                         Projections.constructor(UserShortDto.class,
                                 event.initiatorId,
-                                Expressions.nullExpression(String.class) // заглушка, name будет заполнен позже через Feign Client.
+                                Expressions.nullExpression(String.class)
                         ),
                         event.paid,
-                        event.publishedOn,
                         event.title,
-                        Expressions.asNumber(0L).as("views"),
-                        Expressions.asNumber(0L).as("commentsCount")
+                        Expressions.asNumber(0L).as("commentsCount"),
+                        Expressions.asNumber(0.0).as("rating"),
+                        Expressions.asNumber(0L).as("views")
                 ))
                 .from(event)
                 .where(predicate)
-                .groupBy(
-                        event.id, // нужен только .groupBy(event.id), но для postgres обязательно перечислять в groupBy все поля из select
-                        event.category.id,
-                        event.category.name,
-                        event.initiatorId,
-                        event.paid,
-                        event.title
-                )
-                .orderBy(event.eventDate.asc()) // сортируем сразу по дате, если нужна по views, то потом в сервисе переделываем
+                .orderBy(event.eventDate.asc())
                 .offset(param.getFrom())
                 .limit(param.getSize())
                 .fetch();
-
     }
 
 
     @Override
     public Optional<EventFullDto> findEventByIdFullDto(Long id) {
-
-        return Optional.ofNullable(
-                queryFactory
-                        .select(Projections.constructor(EventFullDto.class,
-                                event.id,
-                                event.annotation,
-                                Projections.constructor(CategoryDto.class, // Категория: создаём CategoryDto через проекцию
-                                        event.category.id,
-                                        event.category.name
-                                ),
-                                Expressions.asNumber(0L).as("confirmedRequests"), // confirmedRequests заполняется в сервисе через Feign Client.
-                                event.createdOn,
-                                event.description,
-                                event.eventDate,
-                                Projections.constructor(UserShortDto.class,
-                                        event.initiatorId,
-                                        Expressions.nullExpression(String.class)  // теперь нет связи с User, заглушка
-                                ),
-                                Projections.constructor(
-                                        Location.class, // в Event это @Embedded поле EventLocation, в таблице две колонки lat и lon
-                                        event.location.lat,
-                                        event.location.lon
-                                ),
-                                event.paid,
-                                event.participantLimit,
-                                event.publishedOn,
-                                event.requestModeration,
-                                event.state,
-                                event.title,
-                                Expressions.asNumber(0L).as("views"), // пока 0, потом подгружаем в сервисе
-                                Expressions.asNumber(0L).as("commentsCount")
-                        ))
-                        .from(event)
-                        .where(event.id.eq(id))
-                        .groupBy(
-                                event.id, // нужен только .groupBy(event.id), но для postgres обязательно перечислять в groupBy все поля из select
+        EventFullDto result = queryFactory
+                .select(Projections.constructor(EventFullDto.class,
+                        event.id,
+                        event.annotation,
+                        Projections.constructor(CategoryDto.class,
                                 event.category.id,
-                                event.category.name,
+                                event.category.name
+                        ),
+                        Expressions.asNumber(0L).as("confirmedRequests"),
+                        event.createdOn,
+                        event.description,
+                        event.eventDate,
+                        Projections.constructor(UserShortDto.class,
                                 event.initiatorId,
+                                Expressions.nullExpression(String.class)
+                        ),
+                        Projections.constructor(Location.class,
                                 event.location.lat,
-                                event.location.lon,
-                                event.paid,
-                                event.participantLimit,
-                                event.publishedOn,
-                                event.requestModeration,
-                                event.state,
-                                event.title
-                        )
-                        .fetchOne()
-        );
+                                event.location.lon
+                        ),
+                        event.paid,
+                        event.participantLimit,
+                        event.publishedOn,
+                        event.requestModeration,
+                        event.state,
+                        event.title,
+                        Expressions.asNumber(0.0).as("rating"),
+                        Expressions.asNumber(0L).as("commentsCount"),
+                        Expressions.asNumber(0L).as("views")
+                ))
+                .from(event)
+                .where(event.id.eq(id))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
 
     @Override
     public List<EventFullDto> findEventsFullDto(EventRepositoryParam param) {
-
         BooleanBuilder predicate = createPredicate(param);
 
         return queryFactory
@@ -140,7 +118,7 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                                 event.category.id,
                                 event.category.name
                         ),
-                        Expressions.asNumber(0L).as("confirmedRequests"), // confirmedRequests заполняется в сервисе через Feign Client.
+                        Expressions.asNumber(0L).as("confirmedRequests"),
                         event.createdOn,
                         event.description,
                         event.eventDate,
@@ -148,8 +126,7 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                                 event.initiatorId,
                                 Expressions.nullExpression(String.class)
                         ),
-                        Projections.constructor(
-                                Location.class,
+                        Projections.constructor(Location.class,
                                 event.location.lat,
                                 event.location.lon
                         ),
@@ -159,26 +136,13 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
                         event.requestModeration,
                         event.state,
                         event.title,
-                        Expressions.asNumber(0L).as("views"),
-                        Expressions.asNumber(0L).as("commentsCount")
+                        Expressions.asNumber(0.0).as("rating"),
+                        Expressions.asNumber(0L).as("commentsCount"),
+                        Expressions.asNumber(0L).as("views")
                 ))
                 .from(event)
                 .where(predicate)
-                .groupBy(
-                        event.id, // нужен только .groupBy(event.id), но для postgres обязательно перечислять в groupBy все поля из select
-                        event.category.id,
-                        event.category.name,
-                        event.initiatorId,
-                        event.location.lat,
-                        event.location.lon,
-                        event.paid,
-                        event.participantLimit,
-                        event.publishedOn,
-                        event.requestModeration,
-                        event.state,
-                        event.title
-                )
-                .orderBy(event.eventDate.asc())   // onlyAvailable теперь в сервисе, т.к. нет доступа к requsts
+                .orderBy(event.eventDate.asc())
                 .offset(param.getFrom())
                 .limit(param.getSize())
                 .fetch();
@@ -187,9 +151,9 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
     private BooleanBuilder createPredicate(EventRepositoryParam param) {
         BooleanBuilder predicate = new BooleanBuilder();
 
-        if (param.isPublicRequest()) {  // для публичных запросов только PUBLISHED события
+        if (param.isPublicRequest()) {
             predicate.and(event.state.eq(EventState.PUBLISHED));
-        } else if (param.hasStates()) {  // для админских запросов добавляем states в предикат, если они переданы
+        } else if (param.hasStates()) {
             predicate.and(event.state.in(param.getStates()));
         }
 
@@ -217,7 +181,7 @@ public class EventRepositoryCustomImpl implements EventRepositoryCustom {
 
         if (param.hasDateRange()) {
             predicate.and(event.eventDate.between(param.getRangeStart(), param.getRangeEnd()));
-        } else if (param.hasRangeStart()) { // прямо не указано как обрабатывать, когда одна граница
+        } else if (param.hasRangeStart()) {
             predicate.and(event.eventDate.after(param.getRangeStart()));
         } else if (param.hasRangeEnd()) {
             predicate.and(event.eventDate.before(param.getRangeEnd()));

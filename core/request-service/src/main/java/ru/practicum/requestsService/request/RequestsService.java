@@ -9,7 +9,8 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableFeignClients
 @ComponentScan(basePackages = {
         "ru.practicum.requestsService.request",
-        "ru.practicum.common"
+        "ru.practicum.common",
+        "ru.practicum.stat.client"
 })
 public class RequestsService {
     public static void main(String[] args) {

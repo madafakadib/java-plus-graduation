@@ -1,9 +1,22 @@
 server:
   port: ${PORT:0}
 
+grpc:
+  client:
+    analyzer:
+      address: "discovery:///analyzer"
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: PLAINTEXT
+    collector:
+      address: "discovery:///collector"
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: PLAINTEXT
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5436/requests
+    url: jdbc:postgresql://localhost:5432/ewm
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver

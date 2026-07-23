@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import feign.FeignException;
 import ru.practicum.common.dto.events.EventBaseDto;
 import ru.practicum.common.dto.events.EventState;
 import ru.practicum.common.dto.participationRequest.EventRequestStatusUpdateRequest;
@@ -16,8 +17,10 @@ import ru.practicum.common.exceptions.exceptions.NotFoundException;
 import ru.practicum.requestsService.request.client.EventClient;
 import ru.practicum.requestsService.request.client.UserClient;
 import ru.practicum.requestsService.request.dto.ParticipationRequestMapper;
+import ru.practicum.common.dto.participationRequest.RegistrationRequest;
 import ru.practicum.requestsService.request.model.ParticipationRequest;
 import ru.practicum.requestsService.request.repository.ParticipationRequestRepository;
+import ru.practicum.stat.client.CollectorClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,23 +35,38 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     private final ParticipationRequestRepository requestRepository;
     private final UserClient userClient;
     private final EventClient eventClient;
-
+    private final CollectorClient collectorClient;
 
     @Override
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        // DataIntegrityViolationException c 409 кодом и так будет при нарушении уникальности в БД, но можно и явно проверить
+        if (eventId == null || eventId <= 0) {
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
+        }
+
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
             throw new ConditionsNotMetException("Request already exists for this event");
         }
 
-        UserShortDto user = userClient.getUserShortById(userId); // ошибки обрабатываются в FallbackFactory
+        UserShortDto user;
+        try {
+            user = userClient.getUserShortById(userId);
+        } catch (FeignException.NotFound e) {
+            throw new NotFoundException("User with id=" + userId + " not found");
+        }
+
         if (user == null) {
             throw new NotFoundException("User with id=" + userId + " not found");
         }
 
-        EventBaseDto event = eventClient.getBaseEventInfo(eventId); // ошибки обрабатываются в FallbackFactory
+        EventBaseDto event;
+        try {
+            event = eventClient.getBaseEventInfo(eventId);
+        } catch (FeignException.NotFound e) {
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
+        }
+
         if (event == null) {
-            throw new NotFoundException("Event with id=" + eventId + " not found");
+            throw new ConditionsNotMetException("Event with id=" + eventId + " not found");
         }
 
         if (event.getInitiator().getId().equals(userId)) {
@@ -71,6 +89,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             request.setStatus(RequestStatus.CONFIRMED);
         }
         request = requestRepository.save(request);
+
+        if (request.getStatus() == RequestStatus.CONFIRMED) {
+            collectorClient.sendRegistration(userId, eventId);
+            log.info("Отправлена регистрация в Collector: userId={}, eventId={}", userId, eventId);
+        }
 
         return ParticipationRequestMapper.toParticipationRequestDto(request);
     }
@@ -96,7 +119,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new NotFoundException("Request with id=" + requestId + " not found for user with id=" + userId);
         }
 
-        // отменить можно только PENDING и CONFIRMED? в ТЗ явно не указано
         if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.CONFIRMED) {
             throw new ConditionsNotMetException("Only requests with PENDING or CONFIRMED status can be canceled. Current status: " + request.getStatus());
         }
@@ -122,15 +144,17 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult updateRequestStatuses(Long eventId, int limit, EventRequestStatusUpdateRequest updateRequest) {
-        // Проверяем, что заявки существуют
+    public EventRequestStatusUpdateResult updateRequestStatuses(
+            Long eventId,
+            int limit,
+            EventRequestStatusUpdateRequest updateRequest
+    ) {
         List<ParticipationRequest> requests = requestRepository.findByIdIn(updateRequest.getRequestIds());
 
         if (requests.isEmpty()) {
             throw new NotFoundException("Requests not found for ids: " + updateRequest.getRequestIds());
         }
 
-        // Проверяем, что все заявки относятся к данному событию
         for (ParticipationRequest r : requests) {
             if (!r.getEventId().equals(eventId)) {
                 throw new ConditionsNotMetException("Request with id=" + r.getId() + " is not related to event=" + eventId);
@@ -143,7 +167,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         List<ParticipationRequest> approved = new ArrayList<>();
         List<ParticipationRequest> rejected = new ArrayList<>();
 
-        // Получаем текущее количество подтвержденных заявок
         long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
         if (updateRequest.getStatus().equals(RequestStatus.CONFIRMED)) {
@@ -159,13 +182,44 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             rejected.addAll(requests);
         }
 
-        // Обновляем статусы в БД
-        updateStatuses(approved, RequestStatus.CONFIRMED);
-        updateStatuses(rejected, RequestStatus.REJECTED);
+        if (!approved.isEmpty()) {
+            List<Long> approvedIds = approved.stream()
+                    .map(ParticipationRequest::getId)
+                    .collect(Collectors.toList());
+            requestRepository.updateStatusByIdIn(approvedIds, RequestStatus.CONFIRMED);
+            approved.forEach(r -> r.setStatus(RequestStatus.CONFIRMED));
+        }
 
-        // Если лимит исчерпан, отклоняем все остальные PENDING заявки
+        if (!rejected.isEmpty()) {
+            List<Long> rejectedIds = rejected.stream()
+                    .map(ParticipationRequest::getId)
+                    .collect(Collectors.toList());
+            requestRepository.updateStatusByIdIn(rejectedIds, RequestStatus.REJECTED);
+            rejected.forEach(r -> r.setStatus(RequestStatus.REJECTED));
+        }
+
+        requestRepository.saveAll(approved);
+        requestRepository.saveAll(rejected);
+
+        if (!approved.isEmpty()) {
+            List<RegistrationRequest> registrations = approved.stream()
+                    .map(r -> new RegistrationRequest(r.getRequesterId(), r.getEventId()))
+                    .collect(Collectors.toList());
+            collectorClient.sendRegistrationsBatch(registrations);
+        }
+
         if (limit > 0 && confirmedCount >= limit) {
-            requestRepository.updateStatusByEventId(eventId, RequestStatus.PENDING, RequestStatus.REJECTED);
+            List<ParticipationRequest> pendingRequests =
+                    requestRepository.findByEventIdAndStatus(eventId, RequestStatus.PENDING);
+
+            if (!pendingRequests.isEmpty()) {
+                List<Long> pendingIds = pendingRequests.stream()
+                        .map(ParticipationRequest::getId)
+                        .collect(Collectors.toList());
+                requestRepository.updateStatusByIdIn(pendingIds, RequestStatus.REJECTED);
+                pendingRequests.forEach(r -> r.setStatus(RequestStatus.REJECTED));
+                requestRepository.saveAll(pendingRequests);
+            }
         }
 
         return ParticipationRequestMapper.toEventRequestStatusUpdateResult(approved, rejected);

@@ -2,11 +2,6 @@
 <project version="4">
   <component name="AmplicodePersistenceUnitSettings">
     <persistence-units>
-      <persistence-unit moduleName="stats-server" name="Default">
-        <packages>
-          <package value="ru.practicum.stats.server" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="event-service" name="Default">
         <packages>
           <package value="ru.practicum" />
@@ -27,15 +22,20 @@
           <package value="ru.practicum.compilation_service" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="comment-service" name="Default">
-        <packages>
-          <package value="ru.practicum.comment_service" />
-        </packages>
-      </persistence-unit>
-      <persistence-unit moduleName="common" name="Default" />
       <persistence-unit moduleName="user-service" name="Default">
         <packages>
           <package value="ru.practicum.userService.user" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="comment-service" name="Default">
+        <packages>
+          <package value="ru.practicum.commentsService.comments" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="common" name="Default" />
+      <persistence-unit moduleName="analyzer" name="Default">
+        <packages>
+          <package value="ru.practicum.analyzer" />
         </packages>
       </persistence-unit>
     </persistence-units>
